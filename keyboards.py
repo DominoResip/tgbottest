@@ -136,11 +136,14 @@ def donate_keyboard(*, with_back: bool = True) -> InlineKeyboardMarkup:
         rows.append(
             [
                 InlineKeyboardButton(
-                    config.DONATION_TITLE or "Оплатить через ЮKassa",
+                    config.DONATION_TITLE or "💙 Оплатить в CloudTips",
                     url=url,
                 )
             ]
         )
+    rows.append(
+        [InlineKeyboardButton("📷 Показать QR-код", callback_data="m:donate_qr")]
+    )
     if with_back:
         rows.append([InlineKeyboardButton("К меню 🔙", callback_data="m:home")])
     return InlineKeyboardMarkup(rows)

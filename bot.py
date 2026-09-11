@@ -890,6 +890,44 @@ async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
             edit=True,
         )
         return
+    if data == "m:donate_qr":
+        from pathlib import Path
+
+        from telegram import InputFile
+
+        qr_path = Path(config.DONATION_QR_PATH)
+        if not qr_path.is_file():
+            await _send(
+                update,
+                "QR-код пока недоступен. Воспользуйтесь кнопкой оплаты CloudTips.",
+                markup=kb.donate_keyboard(),
+            )
+            return
+        chat_id = update.effective_chat.id if update.effective_chat else None
+        if chat_id is None:
+            return
+        caption = (
+            "📷 <b>QR для поддержки хостинга</b>\n"
+            "Отсканируйте камерой или приложением банка.\n"
+            f"Либо откройте ссылку: {config.DONATION_URL or 'CloudTips'}"
+        )
+        try:
+            with qr_path.open("rb") as f:
+                await context.bot.send_photo(
+                    chat_id=chat_id,
+                    photo=InputFile(f, filename="qr_cloudtips.png"),
+                    caption=caption,
+                    parse_mode=ParseMode.HTML,
+                    reply_markup=kb.donate_keyboard(with_back=True),
+                )
+        except Exception:
+            log.exception("donate QR send failed")
+            await _send(
+                update,
+                "Не удалось отправить QR. Откройте оплату кнопкой CloudTips.",
+                markup=kb.donate_keyboard(),
+            )
+        return
 
     if data.startswith("k:"):
         if not await _can_pick(update, context):
